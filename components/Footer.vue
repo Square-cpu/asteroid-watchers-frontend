@@ -1,7 +1,7 @@
 <template>
   <footer class="minimal-footer">
     <div class="footer-content">
-      <p>&copy; {{ currentYear }} Startup&trade;. All Rights Reserved.</p>
+      <p>&copy; {{ currentYear }} Asteroid Watchers&trade;. All Rights Reserved.</p>
     </div>
   </footer>
 </template>
