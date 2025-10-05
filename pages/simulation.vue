@@ -5,7 +5,10 @@
       <Asteroid v-if="asteroidPayload" :asteroidData="asteroidPayload" />
     </div>
 
+
+
     <div class="info-card">
+      <h1 class = "warning">Don't know how to use the simulator? Go to the help menu :)</h1>
       <div
         class="info-row"
         style="justify-content: space-between; align-items: center"
@@ -60,7 +63,7 @@
 
       <hr class="divider" />
 
-      <h1 class="categories">Physical properties</h1>
+      <h1 class="categories" v-if="!loading">Physical properties</h1>
       <div class="info" v-if="!loading && !error && selectedNeo">
         <div class="info-row">
           <img src="@/assets/styles/icons/ruler.svg" class="icon" />
@@ -325,7 +328,9 @@
       </div>
 
       <!-- <NuxtLink to="/personalize"> -->
-      <button class="start" @click="startSimulation">Start Simulation</button>
+      <div v-if="!loading">
+        <button class="start" @click="startSimulation">Start Simulation</button>
+      </div>      
       <!-- </NuxtLink> -->
     </div>
   </div>

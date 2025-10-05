@@ -3,10 +3,10 @@
     <div ref="canvasContainer" class="canvas-fill"></div>
 
 
-    <div class="legend">
+    <!-- <div class="legend">
       <div><span class="color-box red"></span> Impact Radius</div>
       <div><span class="color-box blue"></span> Orbit Line</div>
-    </div>
+    </div> -->
   </div>
 </template>
   
@@ -46,8 +46,8 @@ const canvasContainer = ref(null);
 
 let scene, camera, renderer, controls;
 let mesh, material, geometry, origPositions;
-let orbitLine;
-let impactRing;
+// let orbitLine;
+// let impactRing;
 let fragGroup;
 let dangerPulseTween = null;
 let rafId;
@@ -228,88 +228,88 @@ function applyPayloadToVisuals(payload) {
   const noiseAmp = clamp(0.05 + (d / 2000), 0.02, 0.45);
   applyDeformation({ noiseScale: 2.5, noiseAmp });
 
-  // orbit line (ellipse approximation)
-  if (payload.show_orbit_line) {
-    drawOrbitLine(payload.orbit_color || payload.orbitColor || "#88ccff", payload.approach_vector);
-  } else {
-    removeOrbitLine();
-  }
+  // // orbit line (ellipse approximation)
+  // if (payload.show_orbit_line) {
+  //   drawOrbitLine(payload.orbit_color || payload.orbitColor || "#88ccff", payload.approach_vector);
+  // } else {
+  //   removeOrbitLine();
+  // }
 
-  // impact ring visual (scale from impact_energy_tnt)
-  if (payload.impact_energy_tnt && payload.impact_energy_tnt > 0) {
-    const energy = payload.impact_energy_tnt;
-    const ringScale = clamp(Math.cbrt(energy) * 0.02, 0.5, 100);
-    showImpactRing(ringScale, payload.is_potentially_hazardous_asteroid || payload.impact_probability > 0);
-  } else {
-    hideImpactRing();
-  }
+  // // impact ring visual (scale from impact_energy_tnt)
+  // if (payload.impact_energy_tnt && payload.impact_energy_tnt > 0) {
+  //   const energy = payload.impact_energy_tnt;
+  //   const ringScale = clamp(Math.cbrt(energy) * 0.02, 0.5, 100);
+  //   showImpactRing(ringScale, payload.is_potentially_hazardous_asteroid || payload.impact_probability > 0);
+  // } else {
+  //   hideImpactRing();
+  // }
 
   // fragments (pre-create, show/hide controlled)
   createFragments(payload, Math.round(clamp((payload.fragmentation_probability ?? 0) * 30 + (d/200), 0, 40)));
 }
 
-// orbit line helpers
-function drawOrbitLine(colorHex, approachVector) {
-  removeOrbitLine();
-  const points = [];
-  // simple circular orbit around origin in the plane oriented by approachVector if provided
-  const segments = 120;
-  const radius = 4; // visual radius (not physical)
-  // If approachVector is provided use it to rotate the orbit plane
-  const basis = new THREE.Matrix4();
-  if (approachVector) {
-    const v = new THREE.Vector3(approachVector.x, approachVector.y, approachVector.z).normalize();
-    // rotate z-axis to v
-    const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), v);
-    basis.makeRotationFromQuaternion(quat);
-  }
+// // orbit line helpers
+// function drawOrbitLine(colorHex, approachVector) {
+//   removeOrbitLine();
+//   const points = [];
+//   // simple circular orbit around origin in the plane oriented by approachVector if provided
+//   const segments = 120;
+//   const radius = 4; // visual radius (not physical)
+//   // If approachVector is provided use it to rotate the orbit plane
+//   const basis = new THREE.Matrix4();
+//   if (approachVector) {
+//     const v = new THREE.Vector3(approachVector.x, approachVector.y, approachVector.z).normalize();
+//     // rotate z-axis to v
+//     const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), v);
+//     basis.makeRotationFromQuaternion(quat);
+//   }
 
-  for (let i = 0; i <= segments; i++) {
-    const t = (i / segments) * Math.PI * 2;
-    const p = new THREE.Vector3(Math.cos(t) * radius, Math.sin(t) * radius, 0).applyMatrix4(basis);
-    points.push(p);
-  }
-  const geom = new THREE.BufferGeometry().setFromPoints(points);
-  const mat = new THREE.LineBasicMaterial({ color: new THREE.Color(colorHex) });
-  orbitLine = new THREE.Line(geom, mat);
-  scene.add(orbitLine);
-}
+//   for (let i = 0; i <= segments; i++) {
+//     const t = (i / segments) * Math.PI * 2;
+//     const p = new THREE.Vector3(Math.cos(t) * radius, Math.sin(t) * radius, 0).applyMatrix4(basis);
+//     points.push(p);
+//   }
+//   const geom = new THREE.BufferGeometry().setFromPoints(points);
+//   const mat = new THREE.LineBasicMaterial({ color: new THREE.Color(colorHex) });
+//   orbitLine = new THREE.Line(geom, mat);
+//   scene.add(orbitLine);
+// }
 
-function removeOrbitLine() {
-  if (orbitLine) {
-    scene.remove(orbitLine);
-    orbitLine.geometry.dispose();
-    if (orbitLine.material) orbitLine.material.dispose();
-    orbitLine = null;
-  }
-}
+// function removeOrbitLine() {
+//   if (orbitLine) {
+//     scene.remove(orbitLine);
+//     orbitLine.geometry.dispose();
+//     if (orbitLine.material) orbitLine.material.dispose();
+//     orbitLine = null;
+//   }
+// }
 
-// impact ring visual
-function showImpactRing(scale = 4, danger = false) {
-  hideImpactRing();
-  const geom = new THREE.RingGeometry(scale * 0.6, scale, 64);
-  const mat = new THREE.MeshBasicMaterial({
-    color: danger ? new THREE.Color(1.0, 0.35, 0.25) : new THREE.Color(0.6, 0.8, 1),
-    transparent: true,
-    opacity: 0.18,
-    side: THREE.DoubleSide,
-  });
-  impactRing = new THREE.Mesh(geom, mat);
-  impactRing.rotation.x = -Math.PI / 2;
-  impactRing.position.set(0, -1.5, 0);
-  scene.add(impactRing);
-}
+// // impact ring visual
+// function showImpactRing(scale = 4, danger = false) {
+//   hideImpactRing();
+//   const geom = new THREE.RingGeometry(scale * 0.6, scale, 64);
+//   const mat = new THREE.MeshBasicMaterial({
+//     color: danger ? new THREE.Color(1.0, 0.35, 0.25) : new THREE.Color(0.6, 0.8, 1),
+//     transparent: true,
+//     opacity: 0.18,
+//     side: THREE.DoubleSide,
+//   });
+//   impactRing = new THREE.Mesh(geom, mat);
+//   impactRing.rotation.x = -Math.PI / 2;
+//   impactRing.position.set(0, -1.5, 0);
+//   scene.add(impactRing);
+// }
 
-function hideImpactRing() {
-  if (impactRing) {
-    scene.remove(impactRing);
-    try {
-      impactRing.geometry.dispose();
-      impactRing.material.dispose();
-    } catch (e) {}
-    impactRing = null;
-  }
-}
+// function hideImpactRing() {
+//   if (impactRing) {
+//     scene.remove(impactRing);
+//     try {
+//       impactRing.geometry.dispose();
+//       impactRing.material.dispose();
+//     } catch (e) {}
+//     impactRing = null;
+//   }
+// }
 
 // fragments: create small sphere children hidden by default
 function createFragments(payload, count = 8) {
@@ -381,10 +381,10 @@ function animate() {
     fragGroup.rotation.y += effectiveRotationSpeed * 0.5 * delta * rotationFactor;
   }
 
-  // impacto ring pulsante
-  if (impactRing) {
-    impactRing.material.opacity = 0.12 + Math.abs(Math.sin(now / 1500)) * 0.06;
-  }
+  // // impacto ring pulsante
+  // if (impactRing) {
+  //   impactRing.material.opacity = 0.12 + Math.abs(Math.sin(now / 1500)) * 0.06;
+  // }
 
   controls.update();
   renderer.render(scene, camera);
@@ -474,14 +474,14 @@ onBeforeUnmount(() => {
     // dispose three objects
     if (geometry) geometry.dispose();
     if (material) material.dispose();
-    if (orbitLine) {
-      orbitLine.geometry.dispose();
-      orbitLine.material.dispose();
-    }
-    if (impactRing) {
-      impactRing.geometry.dispose();
-      impactRing.material.dispose();
-    }
+    // if (orbitLine) {
+    //   orbitLine.geometry.dispose();
+    //   orbitLine.material.dispose();
+    // }
+    // if (impactRing) {
+    //   impactRing.geometry.dispose();
+    //   impactRing.material.dispose();
+    // }
     if (fragGroup) {
       fragGroup.children.forEach((c) => {
         if (c.geometry) c.geometry.dispose();

@@ -20,7 +20,7 @@
 
     <div class="info-card">
       <h2 class="name">{{ impactResult?.result?.name ?? "Impact result" }}</h2>
-  <hr class="divider" />
+      <hr class="divider" />
       <div class="info" v-if="impactResult">
         <div class="info-row">
           <img src="@/assets/styles/icons/death.png" class="icon" />
@@ -28,6 +28,7 @@
             Estimated deaths:
             <strong>
               {{
+
                 (impactResult.result?.estimated_kills ??
                   impactResult.result?.estimated_deaths ??
                   impactResult.result?.estimated_kills_total) ??
@@ -129,9 +130,9 @@
         <hr class="divider" />
         <h1 class="categories">How to deflect</h1>
 
-        <div style="padding: 12px;">
-          <p v-if="impactResult.result?.deflection_advice">
-            {{ impactResult.result.deflection_advice }}
+        <div class="deflect-text" style="padding: 12px;">
+          <p v-if="deflectionText">
+            {{ deflectionText }}
           </p>
           <p v-else>
             No deflection advice available for this simulation result.
@@ -205,6 +206,91 @@ const coordsAvailable = computed(() => {
     impactCoords.value.lat != null &&
     impactCoords.value.lon != null
   );
+});
+
+/**
+ * Compute a human-friendly deflection instruction.
+ * Priority:
+ * 1) If backend provided result.deflection_advice, use it.
+ * 2) Else, try to compute using available distance (assumed in km).
+ *    thresholds follow the python prototype:
+ *      case 3: distance > 0.75e6 && distance < 7.5e6
+ *      case 2: distance > 7.5e6 && distance < 30e6
+ *      else: case 1
+ */
+const deflectionText = computed(() => {
+  if (!impactResult.value) return null;
+
+  // If backend already provided advice, prefer it
+  const backendAdvice = impactResult.value.result?.deflection_advice;
+  if (backendAdvice && String(backendAdvice).trim().length > 0) {
+    return String(backendAdvice);
+  }
+
+  // Gather possible distance fields (all interpreted as kilometers)
+  const r = impactResult.value.result ?? {};
+  const payloadAsteroid = impactResult.value.payloadSent?.asteroid ?? {};
+
+  const candidateValues = [
+    r.miss_distance_km,
+    r.miss_distance,
+    r.distance,
+    r.distance_km,
+    r._distance,
+    r.close_approach_distance,
+    r.closest_approach_distance,
+    payloadAsteroid.miss_distance_km,
+    payloadAsteroid.miss_distance,
+    payloadAsteroid._distance,
+    impactResult.value.payloadSent?.asteroid?.distance,
+  ];
+
+  let distanceKm = null;
+  for (const v of candidateValues) {
+    if (v == null) continue;
+    const n = Number(v);
+    if (!Number.isNaN(n)) {
+      distanceKm = n;
+      break;
+    }
+  }
+
+  // thresholds (km)
+  const tA = 0.75e6; // 750,000 km
+  const tB = 7.5e6;  // 7,500,000 km
+  const tC = 30e6;   // 30,000,000 km
+
+  // If distance present, determine case using the same > / < logic as provided
+  let caseId = null;
+  if (distanceKm != null) {
+    if (distanceKm > tA && distanceKm < tB) caseId = 3;
+    else if (distanceKm > tB && distanceKm < tC) caseId = 2;
+    else caseId = 1;
+  }
+
+  // Compose messages for each case
+  const note =
+    " It's worth noting that these scenarios only apply when an asteroid is on a collision course with Earth; otherwise, there are no worries :)";
+
+  const messages = {
+    3:
+      "Case 3: We have to make a nuclear bomb so that the blast of its explosion launches the asteroids or at least decelerates it." +
+      note,
+    2:
+      "Case 2: We are near the real danger, we can turn this into a mission of 'continuous propulsion', and that means taking a spaceship using ionizing fuel (so that it doesn't consume a lot of resources) and taking the asteroid to a short trip around its own orbit." +
+      note,
+    1:
+      "Case 1: This is the case where we have the most time to react, and this is actually a problem, not as big as the other ones, but trying to sync two objects in a far vast space is not such an easy task. In this case all we have to do is launch a spaceship to collide with the asteroid. As it's quite far, from earth, a simple orbit perturbation can make it miss us by many kilometers." +
+      note,
+  };
+
+  // If we identified a case, return the message
+  if (caseId != null) {
+    return messages[caseId];
+  }
+
+  // No distance and no backend advice — can't compute
+  return null;
 });
 </script>
 
@@ -285,6 +371,11 @@ const coordsAvailable = computed(() => {
   height: 1px;
   background: #ccc;
   margin: 12px 0;
+}
+
+.deflect-text{
+  color:rgb(0, 0, 0);
+  size: 15px;
 }
 
 .start {
