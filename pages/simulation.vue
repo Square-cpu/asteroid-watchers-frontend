@@ -15,7 +15,7 @@
           <div>
             <div style="font-size: 12px; color: #666">Date</div>
 
-            <!-- date picker: user may pick a day, but min/max restrict to today -->
+            <!-- date picker: user may pick a day, but max restrict to today -->
             <div
               style="
                 font-weight: 700;
@@ -72,7 +72,20 @@
         <div class="info-row">
           <img src="@/assets/styles/icons/weight.png" class="icon" />
           <h1 class="topic">
-            Mass: <strong>{{ formatMeters(diameterAvg) }}</strong> (avg)
+            Mass:
+            <strong>
+              {{
+                asteroidPayload && asteroidPayload.mass_kg != null
+                  ? Number(asteroidPayload.mass_kg).toLocaleString(undefined, {
+                      maximumFractionDigits: 3,
+                    }) + " kg"
+                  : selectedNeo && selectedNeo._mass != null
+                  ? Number(selectedNeo._mass).toLocaleString(undefined, {
+                      maximumFractionDigits: 3,
+                    }) + " kg"
+                  : "N/A"
+              }}
+            </strong>
           </h1>
         </div>
 
@@ -94,14 +107,22 @@
         <div class="info-row">
           <img src="@/assets/styles/icons/shine.svg" class="icon" />
           <h1 class="topic">
-            Magnitude: <strong>{{ selectedNeo.absolute_magnitude_h }}</strong>
+            Magnitude:
+            <strong>{{
+              absoluteMagnitude != null
+                ? Number(absoluteMagnitude).toLocaleString(undefined, {
+                    maximumFractionDigits: 3,
+                  })
+                : "N/A"
+            }}</strong>
           </h1>
         </div>
 
         <div class="info-row">
           <img src="@/assets/styles/icons/distance.svg" class="icon" />
           <h1 class="topic">
-            Closest approach: <strong>{{ closestApproachDate }}</strong>
+            Closest approach:
+            <strong>{{ closestApproachDate ?? "N/A" }}</strong>
           </h1>
         </div>
 
@@ -109,9 +130,7 @@
           <img src="@/assets/styles/icons/danger.svg" class="icon" />
           <h1 class="topic">
             Danger:
-            <strong>{{
-              selectedNeo.is_potentially_hazardous_asteroid ? "Yes" : "No"
-            }}</strong>
+            <strong>{{ dangerFlag ? "Yes" : "No" }}</strong>
           </h1>
         </div>
 
@@ -122,7 +141,22 @@
         <div class="info-row">
           <img src="@/assets/styles/icons/angle.svg" class="icon" />
           <h1 class="topic">
-            Orbit Angle: <strong>{{ orbitInclination }}</strong>
+            Orbit Angle:
+            <strong>
+              {{
+                // inclination in degrees (maximum 3 decimal places)
+                (selectedNeo?.orbital_data?.inclination ??
+                  selectedNeo?.details?.inclination ??
+                  asteroidPayload?.orbital_data?.inclination) != null
+                  ? Number(
+                      selectedNeo?.orbital_data?.inclination ??
+                        selectedNeo?.details?.inclination ??
+                        asteroidPayload?.orbital_data?.inclination
+                    ).toLocaleString(undefined, { maximumFractionDigits: 3 }) +
+                    "°"
+                  : "N/A"
+              }}
+            </strong>
           </h1>
         </div>
 
@@ -130,9 +164,21 @@
           <img src="@/assets/styles/icons/axis-major.png" class="icon" />
           <h1 class="topic">
             Major Axis:
-            <strong>{{
-              selectedNeo.is_potentially_hazardous_asteroid ? "Yes" : "No"
-            }}</strong>
+            <strong>
+              {{
+                // assume value is in AU -> convert to km (1 AU = 149,597,870.7 km)
+                (selectedNeo?.orbital_data?.semi_major_axis ??
+                  asteroidPayload?.orbital_data?.semi_major_axis) != null
+                  ? Number(
+                      parseFloat(
+                        selectedNeo?.orbital_data?.semi_major_axis ??
+                          asteroidPayload?.orbital_data?.semi_major_axis
+                      ) * 149597870.7
+                    ).toLocaleString(undefined, { maximumFractionDigits: 3 }) +
+                    " km"
+                  : "N/A"
+              }}
+            </strong>
           </h1>
         </div>
 
@@ -140,9 +186,20 @@
           <img src="@/assets/styles/icons/axis-minor.png" class="icon" />
           <h1 class="topic">
             Minor Axis:
-            <strong>{{
-              selectedNeo.is_potentially_hazardous_asteroid ? "Yes" : "No"
-            }}</strong>
+            <strong>
+              {{
+                (selectedNeo?.orbital_data?.minor_axis ??
+                  asteroidPayload?.orbital_data?.minor_axis) != null
+                  ? Number(
+                      parseFloat(
+                        selectedNeo?.orbital_data?.minor_axis ??
+                          asteroidPayload?.orbital_data?.minor_axis
+                      ) * 149597870.7
+                    ).toLocaleString(undefined, { maximumFractionDigits: 3 }) +
+                    " km"
+                  : "N/A"
+              }}
+            </strong>
           </h1>
         </div>
 
@@ -150,9 +207,17 @@
           <img src="@/assets/styles/icons/period.png" class="icon" />
           <h1 class="topic">
             Period:
-            <strong>{{
-              selectedNeo.is_potentially_hazardous_asteroid ? "Yes" : "No"
-            }}</strong>
+            <strong>
+              {{
+                (selectedNeo?.orbital_data?.orbital_period ??
+                  asteroidPayload?.orbital_data?.orbital_period) != null
+                  ? Number(
+                      selectedNeo?.orbital_data?.orbital_period ??
+                        asteroidPayload?.orbital_data?.orbital_period
+                    ).toLocaleString(undefined, { maximumFractionDigits: 3 })
+                  : "N/A"
+              }}
+            </strong>
           </h1>
         </div>
 
@@ -160,9 +225,17 @@
           <img src="@/assets/styles/icons/circle.png" class="icon" />
           <h1 class="topic">
             Eccentricity:
-            <strong>{{
-              selectedNeo.is_potentially_hazardous_asteroid ? "Yes" : "No"
-            }}</strong>
+            <strong>
+              {{
+                (selectedNeo?.orbital_data?.eccentricity ??
+                  asteroidPayload?.orbital_data?.eccentricity) != null
+                  ? Number(
+                      selectedNeo?.orbital_data?.eccentricity ??
+                        asteroidPayload?.orbital_data?.eccentricity
+                    ).toLocaleString(undefined, { maximumFractionDigits: 3 })
+                  : "N/A"
+              }}
+            </strong>
           </h1>
         </div>
 
@@ -170,29 +243,62 @@
           <img src="@/assets/styles/icons/angle.svg" class="icon" />
           <h1 class="topic">
             Inclination:
-            <strong>{{
-              selectedNeo.is_potentially_hazardous_asteroid ? "Yes" : "No"
-            }}</strong>
+            <strong>
+              {{
+                (selectedNeo?.orbital_data?.inclination ??
+                  selectedNeo?.details?.inclination ??
+                  asteroidPayload?.orbital_data?.inclination) != null
+                  ? Number(
+                      selectedNeo?.orbital_data?.inclination ??
+                        selectedNeo?.details?.inclination ??
+                        asteroidPayload?.orbital_data?.inclination
+                    ).toLocaleString(undefined, { maximumFractionDigits: 3 }) +
+                    "°"
+                  : "N/A"
+              }}
+            </strong>
           </h1>
         </div>
 
         <div class="info-row">
           <img src="@/assets/styles/icons/a-e.png" class="icon" />
           <h1 class="topic">
-            Aphelium:
-            <strong>{{
-              selectedNeo.is_potentially_hazardous_asteroid ? "Yes" : "No"
-            }}</strong>
+            Aphelion:
+            <strong>
+              {{
+                (selectedNeo?.orbital_data?.aphelion_distance ??
+                  asteroidPayload?.orbital_data?.aphelion_distance) != null
+                  ? Number(
+                      parseFloat(
+                        selectedNeo?.orbital_data?.aphelion_distance ??
+                          asteroidPayload?.orbital_data?.aphelion_distance
+                      ) * 149597870.7
+                    ).toLocaleString(undefined, { maximumFractionDigits: 3 }) +
+                    " km"
+                  : "N/A"
+              }}
+            </strong>
           </h1>
         </div>
 
         <div class="info-row">
           <img src="@/assets/styles/icons/a-e.png" class="icon" />
           <h1 class="topic">
-            Perihelium:
-            <strong>{{
-              selectedNeo.is_potentially_hazardous_asteroid ? "Yes" : "No"
-            }}</strong>
+            Perihelion:
+            <strong>
+              {{
+                (selectedNeo?.orbital_data?.perihelion_distance ??
+                  asteroidPayload?.orbital_data?.perihelion_distance) != null
+                  ? Number(
+                      parseFloat(
+                        selectedNeo?.orbital_data?.perihelion_distance ??
+                          asteroidPayload?.orbital_data?.perihelion_distance
+                      ) * 149597870.7
+                    ).toLocaleString(undefined, { maximumFractionDigits: 3 }) +
+                    " km"
+                  : "N/A"
+              }}
+            </strong>
           </h1>
         </div>
 
@@ -200,9 +306,20 @@
           <img src="@/assets/styles/icons/speed.png" class="icon" />
           <h1 class="topic">
             Total Energy:
-            <strong>{{
-              selectedNeo.is_potentially_hazardous_asteroid ? "Yes" : "No"
-            }}</strong>
+            <strong>
+              {{
+                (selectedNeo?._total_energy ??
+                  selectedNeo?.details?.total_energy ??
+                  asteroidPayload?._total_energy) != null
+                  ? Number(
+                      (selectedNeo?._total_energy ??
+                        selectedNeo?.details?.total_energy ??
+                        asteroidPayload?._total_energy) / 1e12
+                    ).toLocaleString(undefined, { maximumFractionDigits: 3 }) +
+                    " TJ"
+                  : "N/A"
+              }}
+            </strong>
           </h1>
         </div>
         <hr class="divider" />
@@ -238,19 +355,454 @@ import Asteroid from "@/components/Asteroid.vue";
 import SelectImpactLocation from "@/components/SelectImpactLocation.vue";
 import * as turf from "@turf/turf";
 
-const impactLocation = ref(null); // will hold { lat, lon, radius_km? }
+// --- basic config (unchanged) ---
+const BACKEND_FEED = "http://localhost:5000/asteroid/feed";
+const BACKEND_BASE = BACKEND_FEED.replace(/\/asteroid\/feed\/?$/, "");
 
-// handler for the emitted event
+// helper: return local yyyy-mm-dd
+function getLocalISODate() {
+  const now = new Date();
+  const tzOffsetMs = now.getTimezoneOffset() * 60000;
+  const local = new Date(now.getTime() - tzOffsetMs);
+  return local.toISOString().slice(0, 10);
+}
+const today = getLocalISODate();
+
+// --- reactive state ---
+const params = reactive({
+  start_date: today,
+  end_date: today,
+});
+
+const loading = ref(true);
+const error = ref(null);
+
+// `neos` now holds lightweight entries from backend feed:
+// { id, name, distance_km (Number), details: { ... } (when fetched) }
+const neos = ref([]);
+const selectedIndex = ref(0);
+
+// local cache for fetched details by id (avoid refetching)
+const detailsCache = reactive({}); // keys: asteroidId -> details object returned by backend
+
+// --- format helpers (unchanged) ---
+function formatMeters(n) {
+  if (n == null) return "N/A";
+  return `${Number(n).toLocaleString(undefined, {
+    maximumFractionDigits: 1,
+  })} m`;
+}
+function formatKmh(n) {
+  if (n == null) return "N/A";
+  return Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+}
+function formatKm(n) {
+  if (n == null) return "N/A";
+  return Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+}
+
+// --- fetch the simplified feed (id, name, distance) ---
+async function fetchNeos() {
+  if (params.start_date > today) {
+    error.value = `You may only select until today's date (${today}).`;
+    neos.value = [];
+    selectedIndex.value = -1;
+    loading.value = false;
+    return;
+  }
+
+  loading.value = true;
+  error.value = null;
+  try {
+    params.end_date = params.start_date;
+
+    const url = new URL(BACKEND_FEED);
+    url.searchParams.set("start_date", params.start_date);
+    url.searchParams.set("end_date", params.end_date);
+
+    const resp = await fetch(url.toString(), {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+
+    if (!resp.ok) {
+      let msg = `HTTP ${resp.status} ${resp.statusText}`;
+      try {
+        const errJson = await resp.json();
+        if (errJson && errJson.message) msg = errJson.message;
+      } catch (e) {}
+      throw new Error(msg);
+    }
+
+    const json = await resp.json();
+
+    // Expecting { asteroids: [ { id, name, distance }, ... ] }
+    const list = Array.isArray(json.asteroids) ? json.asteroids : [];
+
+    // Map into minimal entries, normalize distance to Number (km)
+    const mapped = list.map((a) => {
+      let distance_km = null;
+      try {
+        // upstream may provide distance as string -> parseFloat safe
+        distance_km = a.distance != null ? parseFloat(a.distance) : null;
+      } catch {
+        distance_km = null;
+      }
+      return {
+        id: String(a.id ?? a.name ?? Math.random().toString(36).slice(2, 9)),
+        name: a.name ?? "Unknown",
+        distance_km,
+        // details will be set later when we fetch /get_by_id
+        details: undefined,
+        // keep a small raw pointer if present (unused but helpful)
+        raw: a,
+      };
+    });
+
+    // sort by distance asc (nulls last)
+    mapped.sort((x, y) => {
+      const dx =
+        x.distance_km == null ? Number.POSITIVE_INFINITY : x.distance_km;
+      const dy =
+        y.distance_km == null ? Number.POSITIVE_INFINITY : y.distance_km;
+      return dx - dy;
+    });
+
+    neos.value = mapped;
+    selectedIndex.value = mapped.length > 0 ? 0 : -1;
+
+    // Immediately fetch details for the first asteroid so UI shows info on load
+    if (selectedIndex.value >= 0) {
+      try {
+        loading.value = true;
+        await fetchAsteroidDetails(neos.value[selectedIndex.value].id);
+      } catch (err) {
+        error.value = `Failed to load details for ${
+          neos.value[selectedIndex.value].name
+        }: ${err.message || err}`;
+      } finally {
+        loading.value = false;
+      }
+    }
+  } catch (err) {
+    error.value = err.message || String(err);
+    neos.value = [];
+    selectedIndex.value = -1;
+  } finally {
+    loading.value = false;
+  }
+}
+
+// --- fetch details for a single asteroid by id (GET /asteroid/get_by_id/<id>) ---
+// This attaches the backend response directly into the neos entry:
+// detailsCache[id] = json; entry.details = json; plus a few convenient flattened props used by template
+async function fetchAsteroidDetails(asteroidId) {
+  if (!asteroidId) return null;
+  // return cached if available
+  if (detailsCache[asteroidId]) return detailsCache[asteroidId];
+
+  try {
+    const resp = await fetch(
+      `${BACKEND_BASE}/asteroid/get_by_id/${encodeURIComponent(asteroidId)}`,
+      {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      }
+    );
+    if (!resp.ok) {
+      // try to parse error body
+      let msg = `HTTP ${resp.status} ${resp.statusText}`;
+      try {
+        const j = await resp.json();
+        if (j && j.message) msg = j.message;
+      } catch {}
+      throw new Error(msg);
+    }
+    const json = await resp.json();
+
+    // Save raw details in cache
+    detailsCache[asteroidId] = json;
+
+    // Also attach user-friendly flattened fields to the lightweight entry so template works unchanged
+    const entry = neos.value.find((n) => String(n.id) === String(asteroidId));
+    if (entry) {
+      entry.details = json;
+
+      // Map common fields returned by your updated backend
+      // Backend returns: diameter, mass, velocity (km/s), distance (km), magnitude,
+      // closest_approach_date, danger (bool), inclination, major-axis, minor-axis, period, eccentricity, aphelion, perihelion, total_energy
+      entry.absolute_magnitude_h =
+        json.magnitude ?? entry.absolute_magnitude_h ?? null;
+      entry.is_potentially_hazardous_asteroid = !!(
+        json.danger ?? entry.is_potentially_hazardous_asteroid
+      );
+      entry.close_approach_date_full =
+        json.closest_approach_date ?? json.close_approach_date ?? null;
+
+      // Provide an `orbital_data` object similar to the NASA feed so existing computed orbitInclination can read it
+      entry.orbital_data = entry.orbital_data || {};
+      // semi_major_axis / major-axis may be provided with key "major-axis"
+      const majorAxis =
+        json["major-axis"] ??
+        json["semi_major_axis"] ??
+        json["semiMajorAxis"] ??
+        json.major_axis ??
+        null;
+      entry.orbital_data.semi_major_axis =
+        majorAxis ?? entry.orbital_data.semi_major_axis;
+      entry.orbital_data.inclination =
+        json.inclination ?? entry.orbital_data.inclination;
+      entry.orbital_data.eccentricity =
+        json.eccentricity ?? entry.orbital_data.eccentricity;
+      entry.orbital_data.orbital_period =
+        json.period ?? entry.orbital_data.orbital_period;
+      entry.orbital_data.aphelion_distance =
+        json.aphelion ?? entry.orbital_data.aphelion_distance;
+      entry.orbital_data.perihelion_distance =
+        json.perihelion ?? entry.orbital_data.perihelion_distance;
+      entry.orbital_data.minor_axis =
+        json["minor-axis"] ?? json.minor_axis ?? entry.orbital_data.minor_axis;
+
+      // convenience shallow props that the UI uses
+      // diameter (m) / mass (kg) / velocity (km/s) / distance (km)
+      entry._diameter = json.diameter ?? null;
+      entry._mass = json.mass ?? null;
+      entry._velocity = json.velocity ?? null; // km/s as per backend
+      entry._distance = json.distance ?? null;
+      entry._total_energy = json.total_energy ?? null;
+    }
+
+    return json;
+  } catch (err) {
+    console.error("Failed to fetch asteroid details", err);
+    throw err;
+  }
+}
+
+// Keep selectedIndex valid when neos changes
+watch(neos, (n) => {
+  if (!n || n.length === 0) selectedIndex.value = -1;
+  else if (selectedIndex.value < 0) selectedIndex.value = 0;
+});
+
+// When selection changes, fetch details (and show a loading indicator)
+watch(selectedIndex, async (idx) => {
+  if (idx == null || idx < 0 || idx >= neos.value.length) return;
+  const id = neos.value[idx].id;
+  try {
+    loading.value = true;
+    await fetchAsteroidDetails(id);
+  } catch (err) {
+    // non-fatal: keep the lightweight list but show error
+    error.value = `Failed to load details for ${neos.value[idx].name}: ${
+      err.message || err
+    }`;
+  } finally {
+    loading.value = false;
+  }
+});
+
+// --- derived reactive values ---
+// selectedNeo returns lightweight item plus optional .details
+const selectedNeo = computed(() => {
+  if (!neos.value || neos.value.length === 0) return null;
+  const idx = selectedIndex.value;
+  if (idx == null || idx < 0 || idx >= neos.value.length) return neos.value[0];
+  return neos.value[idx];
+});
+
+// diameterAvg, medianVelocity, distanceKm, closestApproachDate, orbitInclination:
+// map from `selectedNeo.details` when available, otherwise fallback to lightweight fields
+const diameterAvg = computed(() => {
+  const s = selectedNeo.value;
+  if (!s) return null;
+  if (s.details && s.details.diameter != null)
+    return Number(s.details.diameter);
+  if (s._diameter != null) return Number(s._diameter);
+  return null;
+});
+const medianVelocity = computed(() => {
+  const s = selectedNeo.value;
+  if (!s) return null;
+  // backend returns km/s; UI shows km/h => convert
+  const v_km_s = s.details?.velocity ?? s._velocity ?? null;
+  if (v_km_s != null) return Number(v_km_s) * 3600;
+  return null;
+});
+const distanceKm = computed(() => {
+  const s = selectedNeo.value;
+  if (!s) return null;
+  if (s.details && s.details.distance != null)
+    return Number(s.details.distance);
+  if (s._distance != null) return Number(s._distance);
+  return s.distance_km != null ? Number(s.distance_km) : null;
+});
+const closestApproachDate = computed(() => {
+  const s = selectedNeo.value;
+  if (!s) return "N/A";
+  return (
+    s.close_approach_date_full ??
+    (s.details
+      ? s.details.closest_approach_date ?? s.details.close_approach_date
+      : "N/A")
+  );
+});
+const orbitInclination = computed(() => {
+  const s = selectedNeo.value;
+  if (!s) return "N/A";
+  const inc =
+    s.orbital_data?.inclination ?? (s.details ? s.details.inclination : null);
+  return inc != null ? Number(inc).toFixed(2) : "N/A";
+});
+
+// expose magnitude used in the template
+const absoluteMagnitude = computed(() => {
+  const s = selectedNeo.value;
+  if (!s) return null;
+  return (
+    s.absolute_magnitude_h ?? (s.details ? s.details.magnitude ?? null : null)
+  );
+});
+
+// expose danger flag used in the template
+const dangerFlag = computed(() => {
+  const s = selectedNeo.value;
+  if (!s) return false;
+  return (
+    s.is_potentially_hazardous_asteroid ??
+    (s.details ? !!s.details.danger : false)
+  );
+});
+
+// --- map selectedNeo into asteroidPayload for simulation POST ---
+const asteroidPayload = computed(() => {
+  const neo = selectedNeo.value;
+  if (!neo) return null;
+
+  const details = neo.details || detailsCache[neo.id] || null;
+
+  // diameter from details (meters) or null
+  const diameterMeters =
+    details && details.diameter != null
+      ? Number(details.diameter)
+      : neo._diameter != null
+      ? Number(neo._diameter)
+      : null;
+
+  // mass: prefer details.mass, else try _mass
+  const mass_kg =
+    details && details.mass != null
+      ? Number(details.mass)
+      : neo._mass != null
+      ? Number(neo._mass)
+      : null;
+
+  // velocity: details.velocity is km/s per backend; fallback to _velocity
+  const entry_speed_km_s =
+    details && details.velocity != null
+      ? Number(details.velocity)
+      : neo._velocity != null
+      ? Number(neo._velocity)
+      : null;
+
+  const miss_distance_km =
+    details && details.distance != null
+      ? Number(details.distance)
+      : neo._distance != null
+      ? Number(neo._distance)
+      : neo.distance_km != null
+      ? Number(neo.distance_km)
+      : null;
+
+  const absolute_magnitude_h =
+    details && details.magnitude != null
+      ? Number(details.magnitude)
+      : neo.absolute_magnitude_h != null
+      ? Number(neo.absolute_magnitude_h)
+      : null;
+
+  const is_potentially_hazardous_asteroid = !!(
+    neo.is_potentially_hazardous_asteroid ?? (details ? details.danger : false)
+  );
+
+  // mass fallback: if diameter exists but details.mass missing, estimate using density 2500 kg/m^3
+  let estimated_mass = mass_kg;
+  if (estimated_mass == null && diameterMeters != null) {
+    const r = diameterMeters / 2.0;
+    const v = (4 / 3) * Math.PI * Math.pow(r, 3);
+    estimated_mass = v * 2500;
+  }
+
+  // impact energy (tons TNT) attempt if possible
+  let impact_energy_tnt = null;
+  if (estimated_mass != null && entry_speed_km_s != null) {
+    const v_m_s = entry_speed_km_s * 1000;
+    const energy_j = 0.5 * estimated_mass * v_m_s * v_m_s;
+    impact_energy_tnt = energy_j / 4.184e9;
+  }
+
+  // Include orbital props if available
+  const orbital_data =
+    neo.orbital_data ||
+    (details
+      ? {
+          inclination: details.inclination,
+          semi_major_axis:
+            details["major-axis"] ?? details["semi_major_axis"] ?? null,
+          eccentricity: details.eccentricity ?? null,
+          orbital_period: details.period ?? null,
+          aphelion_distance: details.aphelion ?? null,
+          perihelion_distance: details.perihelion ?? null,
+          minor_axis: details["minor-axis"] ?? null,
+        }
+      : {});
+
+  return {
+    id: String(neo.id ?? neo.name ?? Math.random().toString(36).slice(2, 9)),
+    name: neo.name ?? "Unknown",
+    diameterMeters: diameterMeters != null ? Number(diameterMeters) : null,
+    estimated_diameter_min: null,
+    estimated_diameter_max: null,
+    relative_velocity_km_s:
+      entry_speed_km_s != null ? Number(entry_speed_km_s) : null,
+    relative_velocity_km_h:
+      entry_speed_km_s != null ? Number(entry_speed_km_s) * 3600 : null,
+    miss_distance_km: miss_distance_km,
+    absolute_magnitude_h: absolute_magnitude_h,
+    is_potentially_hazardous_asteroid: is_potentially_hazardous_asteroid,
+    composition: "rocky",
+    albedo: 0.12,
+    mass_kg: estimated_mass != null ? Number(estimated_mass) : null,
+    rotation_period_hours: null,
+    lightcurve_amplitude: null,
+    pole_orientation: null,
+    approach_vector: { x: 0, y: 0, z: 1 },
+    impact_probability: 1e-7,
+    impact_energy_tnt,
+    predicted_impact_country: "Unknown",
+    fragmentation_probability: 0.45,
+    entry_speed_km_s:
+      entry_speed_km_s != null ? Number(entry_speed_km_s) : null,
+    entry_angle_deg: 45,
+    visual_style: "realistic",
+    show_orbit_line: true,
+    orbit_color: "#88ccff",
+    label: neo.name ?? "Asteroid",
+    showHUD: true,
+    // attach orbital metadata so simulate-impact has more context if you send it
+    orbital_data,
+  };
+});
+
+// --- action to start simulation (unchanged but uses computed asteroidPayload) ---
+const impactLocation = ref(null);
 function onPlaceSelected(coords) {
-  // coords is { lat, lon } from the modal
-  // store and optionally set a default radius (you can allow user to change radius elsewhere)
   impactLocation.value = {
     lat: coords.lat,
     lon: coords.lon,
-    radius_km: 5, // choose default or expose UI to change
+    radius_km: 5,
   };
 }
-
 const formatedLocation = computed(() => {
   if (!impactLocation.value) return null;
   return `${impactLocation.value.lat}, ${impactLocation.value.lon}`;
@@ -269,8 +821,8 @@ async function startSimulation() {
   }
 
   const payload = {
-    asteroid: asteroidPayload.value, // full asteroid info already on page
-    location: impactLocation.value, // { lat, lon, radius_km }
+    asteroid: asteroidPayload.value,
+    location: impactLocation.value,
   };
 
   try {
@@ -285,9 +837,7 @@ async function startSimulation() {
       throw new Error(errMsg || `HTTP ${resp.status}`);
     }
     const json = await resp.json();
-    // handle results: show a modal, save into reactive state, etc.
     console.log("simulation result", json);
-    // example: show place & kills to the user
     alert(
       `Place: ${json.place || "—"}\nPopulation: ${
         json.population
@@ -301,338 +851,20 @@ async function startSimulation() {
   }
 }
 
-/**
- * Frontend call to NASA NEO Feed API and parsing logic.
- * - user may pick a date (calendar). end_date forced equal to start_date.
- */
-
-// --- API parameters ---
-// Backend endpoint (same-origin). If your backend is on a different origin,
-// change this to the full URL, e.g. "https://api.example.com/asteroid/feed"
-const BACKEND_FEED = "http://localhost:5000/asteroid/feed";
-const BACKEND_BASE = BACKEND_FEED.replace(/\/asteroid\/feed\/?$/, ""); // -> "http://localhost:5000"
-
-// helper: return local yyyy-mm-dd (user's local timezone)
-function getLocalISODate() {
-  // create a Date for now and shift by timezone offset so toISOString() yields local date
-  const now = new Date();
-  const tzOffsetMs = now.getTimezoneOffset() * 60000;
-  const local = new Date(now.getTime() - tzOffsetMs);
-  return local.toISOString().slice(0, 10); // "YYYY-MM-DD"
-}
-const today = getLocalISODate();
-
-// make params reactive so v-model binding updates it
-const params = reactive({
-  start_date: today, // initialize to today
-  end_date: today, // will always equal start_date
-});
-
-// reactive state
-const loading = ref(true);
-const error = ref(null);
-const neos = ref([]); // parsed list of NEOs (flattened and sorted by closest approach)
-const selectedIndex = ref(0);
-
-// helper formatters
-function formatMeters(n) {
-  if (n == null) return "N/A";
-  return `${Number(n).toLocaleString(undefined, {
-    maximumFractionDigits: 1,
-  })} m`;
-}
-function formatKmh(n) {
-  if (n == null) return "N/A";
-  return Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
-}
-function formatKm(n) {
-  if (n == null) return "N/A";
-  return Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
-}
-
-// parse NASA response: flatten the near_earth_objects by date and extract useful fields
-function processNeoData(json) {
-  const neoByDate = json.near_earth_objects || {};
-  const entries = [];
-
-  // iterate over dates
-  for (const dateKey of Object.keys(neoByDate)) {
-    const list = neoByDate[dateKey] || [];
-    for (const neo of list) {
-      // pick first close_approach_data entry if exists (should be within range)
-      const cad =
-        Array.isArray(neo.close_approach_data) &&
-        neo.close_approach_data.length > 0
-          ? neo.close_approach_data[0]
-          : null;
-
-      const distance_km =
-        cad && cad.miss_distance && cad.miss_distance.kilometers
-          ? parseFloat(cad.miss_distance.kilometers)
-          : null;
-
-      const velocity_kmh =
-        cad &&
-        cad.relative_velocity &&
-        cad.relative_velocity.kilometers_per_hour
-          ? parseFloat(cad.relative_velocity.kilometers_per_hour)
-          : null;
-
-      // estimated diameter meters - take the meters min/max if available
-      const ed = neo.estimated_diameter && neo.estimated_diameter.meters;
-      const diameter_min =
-        ed && ed.estimated_diameter_min
-          ? parseFloat(ed.estimated_diameter_min)
-          : null;
-      const diameter_max =
-        ed && ed.estimated_diameter_max
-          ? parseFloat(ed.estimated_diameter_max)
-          : null;
-      const diameter_avg =
-        diameter_min != null && diameter_max != null
-          ? (diameter_min + diameter_max) / 2
-          : null;
-
-      const obj = {
-        id: neo.id,
-        name: neo.name,
-        diameter_min,
-        diameter_max,
-        diameter_avg,
-        distance_km,
-        velocity_kmh,
-        absolute_magnitude_h: neo.absolute_magnitude_h,
-        close_approach_data: neo.close_approach_data || [],
-        orbital_data: neo.orbital_data || {},
-        is_potentially_hazardous_asteroid:
-          !!neo.is_potentially_hazardous_asteroid,
-        raw: neo,
-      };
-
-      entries.push(obj);
-    }
-  }
-
-  // sort by closest approach distance (ascending), putting null distances at the end
-  entries.sort((a, b) => {
-    const da = a.distance_km == null ? Number.POSITIVE_INFINITY : a.distance_km;
-    const db = b.distance_km == null ? Number.POSITIVE_INFINITY : b.distance_km;
-    return da - db;
-  });
-
-  return entries;
-}
-
-async function fetchNeos() {
-  if (params.start_date > today) {
-    error.value = `You may only select until today's date (${today}).`;
-    neos.value = [];
-    selectedIndex.value = -1;
-    loading.value = false;
-    return;
-  }
-
-  loading.value = true;
-  error.value = null;
-  try {
-    params.end_date = params.start_date;
-
-    // Build backend URL (BACKEND_FEED already includes path)
-    const url = new URL(BACKEND_FEED);
-    url.searchParams.set("start_date", params.start_date);
-    url.searchParams.set("end_date", params.end_date);
-
-    const resp = await fetch(url.toString(), {
-      method: "GET",
-      // include credentials if your backend requires cookies/session auth:
-      // credentials: "include",
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!resp.ok) {
-      // try to read body for a helpful error message
-      let msg = `HTTP ${resp.status} ${resp.statusText}`;
-      try {
-        const errJson = await resp.json();
-        if (errJson && errJson.message) msg = errJson.message;
-      } catch (e) {}
-      throw new Error(msg);
-    }
-
-    const json = await resp.json();
-
-    // backend returns the NASA-like JSON feed, so we can reuse processNeoData
-    const parsed = processNeoData(json);
-    neos.value = parsed;
-    selectedIndex.value = parsed.length > 0 ? 0 : -1;
-  } catch (err) {
-    error.value = err.message || String(err);
-    neos.value = [];
-    selectedIndex.value = -1;
-  } finally {
-    loading.value = false;
-  }
-}
-
-// called when date input changes
+// --- date control handler ---
 function onDateChange() {
   if (params.start_date > today) {
-    // reset to today and show error
     params.start_date = today;
     params.end_date = today;
     error.value = `Only until today's date is allowed (${today}). Resetting.`;
     return;
   }
-  // enforce equality and fetch new data
   params.end_date = params.start_date;
   error.value = null;
   fetchNeos();
 }
 
-// derived reactive values for the currently selected NEO
-const selectedNeo = computed(() => {
-  if (!neos.value || neos.value.length === 0) return null;
-  const idx = selectedIndex.value;
-  if (idx == null || idx < 0 || idx >= neos.value.length) return neos.value[0];
-  return neos.value[idx];
-});
-
-const diameterAvg = computed(() =>
-  selectedNeo.value ? selectedNeo.value.diameter_avg : null
-);
-const medianVelocity = computed(() =>
-  selectedNeo.value ? selectedNeo.value.velocity_kmh : null
-);
-const distanceKm = computed(() =>
-  selectedNeo.value ? selectedNeo.value.distance_km : null
-);
-const closestApproachDate = computed(() => {
-  if (!selectedNeo.value) return "N/A";
-  const cad =
-    selectedNeo.value.close_approach_data &&
-    selectedNeo.value.close_approach_data[0];
-  return cad ? cad.close_approach_date_full || cad.close_approach_date : "N/A";
-});
-const orbitInclination = computed(() => {
-  if (!selectedNeo.value) return "N/A";
-  const inc =
-    selectedNeo.value.orbital_data &&
-    selectedNeo.value.orbital_data.inclination;
-  return inc ? Number(inc).toFixed(2) : "N/A";
-});
-
-// --- map selectedNeo -> asteroidPayload (unchanged mapping) ---
-const asteroidPayload = computed(() => {
-  const neo = selectedNeo.value;
-  if (!neo) return null;
-
-  const asNumber = (v, fallback = null) => {
-    if (v == null) return fallback;
-    const n = Number(v);
-    return Number.isFinite(n) ? n : fallback;
-  };
-
-  // diameters (m)
-  const diameter_min = asNumber(neo.diameter_min, null);
-  const diameter_max = asNumber(neo.diameter_max, null);
-  const diameter_avg = asNumber(neo.diameter_avg, null);
-  const diameterMeters = diameter_avg ?? diameter_max ?? diameter_min ?? null;
-
-  // distance and velocities
-  const miss_distance_km = asNumber(neo.distance_km, null);
-  const relative_velocity_km_h = asNumber(neo.velocity_kmh, null);
-  const relative_velocity_km_s =
-    relative_velocity_km_h != null ? relative_velocity_km_h / 3600 : null;
-
-  // magnitude & hazard
-  const absolute_magnitude_h = asNumber(neo.absolute_magnitude_h, null);
-  const is_potentially_hazardous_asteroid =
-    !!neo.is_potentially_hazardous_asteroid;
-
-  // composition / albedo defaults (not in feed)
-  const composition = "rocky";
-  const albedo = 0.12;
-
-  // mass estimation (sphere, density ~ 2500 kg/m^3 for rocky)
-  let mass_kg = null;
-  if (diameterMeters != null) {
-    const r = diameterMeters / 2.0;
-    const volume = (4 / 3) * Math.PI * Math.pow(r, 3);
-    const density = 2500;
-    mass_kg = volume * density;
-  }
-
-  // entry speed/angle heuristics
-  const entry_speed_km_s = relative_velocity_km_s;
-  const entry_angle_deg =
-    neo.orbital_data && neo.orbital_data.inclination
-      ? Number(neo.orbital_data.inclination)
-      : 45;
-
-  // impact probability heuristic
-  const impact_probability = is_potentially_hazardous_asteroid ? 2e-6 : 1e-7;
-
-  // fragmentation probability heuristic
-  let fragmentation_probability = 0.45;
-  if (diameterMeters == null) fragmentation_probability = 0.5;
-  else if (diameterMeters < 50) fragmentation_probability = 0.8;
-  else if (diameterMeters < 500) fragmentation_probability = 0.45;
-  else fragmentation_probability = 0.2;
-
-  // impact energy (tons of TNT) if possible
-  let impact_energy_tnt = null;
-  if (mass_kg != null && entry_speed_km_s != null) {
-    const v_m_s = entry_speed_km_s * 1000;
-    const energy_j = 0.5 * mass_kg * v_m_s * v_m_s;
-    impact_energy_tnt = energy_j / 4.184e9; // convert J -> tons of TNT
-  }
-
-  // pole & approach vector placeholders (not in feed)
-  const pole_orientation = null;
-  const approach_vector = { x: 0, y: 0, z: 1 };
-
-  return {
-    id: String(neo.id ?? neo.name ?? Math.random().toString(36).slice(2, 9)),
-    name: neo.name ?? "Unknown",
-    diameterMeters: diameterMeters != null ? Number(diameterMeters) : null,
-    estimated_diameter_min: diameter_min,
-    estimated_diameter_max: diameter_max,
-    relative_velocity_km_s:
-      entry_speed_km_s != null ? Number(entry_speed_km_s) : null,
-    relative_velocity_km_h:
-      relative_velocity_km_h != null ? Number(relative_velocity_km_h) : null,
-    miss_distance_km: miss_distance_km,
-    absolute_magnitude_h: absolute_magnitude_h,
-    is_potentially_hazardous_asteroid: is_potentially_hazardous_asteroid,
-    composition,
-    albedo,
-    mass_kg: mass_kg,
-    rotation_period_hours: null,
-    lightcurve_amplitude: null,
-    pole_orientation,
-    approach_vector,
-    impact_probability,
-    impact_energy_tnt: impact_energy_tnt,
-    predicted_impact_country: "Unknown",
-    fragmentation_probability,
-    entry_speed_km_s: entry_speed_km_s,
-    entry_angle_deg: entry_angle_deg,
-    visual_style: "realistic",
-    show_orbit_line: true,
-    orbit_color: "#88ccff",
-    label: neo.name ?? "Asteroid",
-    showHUD: true,
-  };
-});
-
-// keep selectedIndex valid when neos list changes
-watch(neos, (n) => {
-  if (!n || n.length === 0) selectedIndex.value = -1;
-  else if (selectedIndex.value < 0) selectedIndex.value = 0;
-});
-
+// initial load
 onMounted(() => {
   fetchNeos();
 });
