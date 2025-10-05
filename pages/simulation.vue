@@ -93,7 +93,7 @@
           <img src="@/assets/styles/icons/velocity.svg" class="icon" />
           <h1 class="topic">
             Median Velocity:
-            <strong>{{ formatKmh(medianVelocity) }}</strong> km/h
+            <strong>{{ formatKmh(medianVelocity) }}</strong> km/s
           </h1>
         </div>
 
@@ -240,27 +240,6 @@
         </div>
 
         <div class="info-row">
-          <img src="@/assets/styles/icons/angle.svg" class="icon" />
-          <h1 class="topic">
-            Inclination:
-            <strong>
-              {{
-                (selectedNeo?.orbital_data?.inclination ??
-                  selectedNeo?.details?.inclination ??
-                  asteroidPayload?.orbital_data?.inclination) != null
-                  ? Number(
-                      selectedNeo?.orbital_data?.inclination ??
-                        selectedNeo?.details?.inclination ??
-                        asteroidPayload?.orbital_data?.inclination
-                    ).toLocaleString(undefined, { maximumFractionDigits: 3 }) +
-                    "°"
-                  : "N/A"
-              }}
-            </strong>
-          </h1>
-        </div>
-
-        <div class="info-row">
           <img src="@/assets/styles/icons/a-e.png" class="icon" />
           <h1 class="topic">
             Aphelion:
@@ -272,7 +251,7 @@
                       parseFloat(
                         selectedNeo?.orbital_data?.aphelion_distance ??
                           asteroidPayload?.orbital_data?.aphelion_distance
-                      ) * 149597870.7
+                      )
                     ).toLocaleString(undefined, { maximumFractionDigits: 3 }) +
                     " km"
                   : "N/A"
@@ -282,7 +261,7 @@
         </div>
 
         <div class="info-row">
-          <img src="@/assets/styles/icons/a-e.png" class="icon" />
+          <img src="@/assets/styles/icons/per.png" class="icon" />
           <h1 class="topic">
             Perihelion:
             <strong>
@@ -305,7 +284,7 @@
         <div class="info-row">
           <img src="@/assets/styles/icons/speed.png" class="icon" />
           <h1 class="topic">
-            Total Energy:
+            Total Orbital Energy:
             <strong>
               {{
                 (selectedNeo?._total_energy ??
@@ -351,9 +330,14 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, reactive } from "vue";
+import { useRouter } from "vue-router"; // <-- added
 import Asteroid from "@/components/Asteroid.vue";
 import SelectImpactLocation from "@/components/SelectImpactLocation.vue";
 import * as turf from "@turf/turf";
+
+// ... rest of file unchanged above ...
+
+const router = useRouter(); // <-- added
 
 // --- basic config (unchanged) ---
 const BACKEND_FEED = "http://localhost:5000/asteroid/feed";
@@ -838,11 +822,41 @@ async function startSimulation() {
     }
     const json = await resp.json();
     console.log("simulation result", json);
-    alert(
-      `Place: ${json.place || "—"}\nPopulation: ${
-        json.population
-      }\nEstimated deaths: ${json.estimated_kills}`
-    );
+
+    // Normalize common coordinate keys from backend into a predictable shape
+    const lat =
+      json.lat ??
+      json.latitude ??
+      json.location?.lat ??
+      json.impact?.lat ??
+      json.coords?.lat ??
+      payload.location?.lat ??
+      null;
+    const lon =
+      json.lon ??
+      json.longitude ??
+      json.location?.lon ??
+      json.impact?.lon ??
+      json.coords?.lon ??
+      payload.location?.lon ??
+      null;
+
+    const impactRecord = {
+      receivedAt: new Date().toISOString(),
+      payloadSent: payload,
+      result: json,
+      coords: lat != null && lon != null ? { lat, lon } : null,
+    };
+
+    // Save the full result in sessionStorage (safe for navigation, not persisted forever)
+    try {
+      sessionStorage.setItem("lastImpact", JSON.stringify(impactRecord));
+    } catch (e) {
+      console.warn("Failed to store simulation result in sessionStorage", e);
+    }
+
+    // Navigate to the impacts page — it will read sessionStorage
+    router.push({ path: "/impacts", query: { from: "simulation" } });
   } catch (err) {
     console.error(err);
     alert("Simulation failed: " + (err.message || err));

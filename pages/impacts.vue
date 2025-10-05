@@ -1,80 +1,215 @@
 <template>
   <div class="organizer">
     <div class="asteroid">
-      <!-- colocar aqui o asteroide -->
-      <h1>
-        Asteroide
-        <!-- dados API -->
-      </h1>
+      <!-- Collision component shows the globe + launched asteroid -->
+      <Collision
+        v-if="coordsAvailable"
+        :impactLat="impactCoords.lat"
+        :impactLon="impactCoords.lon"
+        :impactInfo="impactResult"
+      />
+      <div v-else style="padding: 24px; color: #111;">
+        <h2>No coordinates available</h2>
+        <p>
+          The impacts page did not receive coordinates for the impact. Make sure
+          you started a simulation from the Simulation page, or reload if you
+          recently ran one.
+        </p>
+      </div>
     </div>
 
     <div class="info-card">
-      <h2 class="name">
-        Name
-        <!-- dados API -->
-      </h2>
-
-      <div class="info">
+      <h2 class="name">{{ impactResult?.result?.name ?? "Impact result" }}</h2>
+  <hr class="divider" />
+      <div class="info" v-if="impactResult">
         <div class="info-row">
           <img src="@/assets/styles/icons/death.png" class="icon" />
-          <h1 class="topic">Estimated deaths:</h1>
+          <h1 class="topic">
+            Estimated deaths:
+            <strong>
+              {{
+                (impactResult.result?.estimated_kills ??
+                  impactResult.result?.estimated_deaths ??
+                  impactResult.result?.estimated_kills_total) ??
+                "N/A"
+              }}
+            </strong>
+          </h1>
+        </div>
+
+        <div class="info-row">
+          <img src="@/assets/styles/icons/place.svg" class="icon" />
+          <h1 class="topic">
+            Place: <strong>{{ impactResult.result?.place ?? "Unknown" }}</strong>
+          </h1>
         </div>
         <hr class="divider" />
-
         <h1 class="categories">Crater</h1>
+
         <div class="info-row">
           <img src="@/assets/styles/icons/ruler.svg" class="icon" />
-          <h1 class="topic">Radius:</h1>
+          <h1 class="topic">
+            Crater radius:
+            <strong>
+              {{
+                impactResult.result?.crater_radius_km ??
+                impactResult.result?.crater_radius ??
+                "N/A"
+              }}
+            </strong>
+          </h1>
         </div>
 
         <div class="info-row">
           <img src="@/assets/styles/icons/velocity.svg" class="icon" />
-          <h1 class="topic">Impact velocity:</h1>
+          <h1 class="topic">
+            Impact velocity:
+            <strong>
+              {{
+                impactResult.result?.impact_velocity_km_s ??
+                impactResult.result?.impact_velocity_km_h ??
+                impactResult.result?.velocity ??
+                "N/A"
+              }}
+            </strong>
+          </h1>
         </div>
 
         <div class="info-row">
           <img src="@/assets/styles/icons/energy.png" class="icon" />
-          <h1 class="topic">Impact energy:</h1>
+          <h1 class="topic">
+            Impact energy:
+            <strong>
+              {{
+                impactResult.result?.impact_energy_mt ??
+                impactResult.result?.energy_tons_tnt ??
+                impactResult.result?.energy_joules ??
+                "N/A"
+              }}
+            </strong>
+          </h1>
         </div>
 
         <hr class="divider" />
 
         <h1 class="categories">Other impacts</h1>
+
         <div class="info-row">
           <img src="@/assets/styles/icons/fire.png" class="icon" />
-          <h1 class="topic">Fireball Wide:</h1>
+          <h1 class="topic">
+            Fireball width:
+            <strong>{{ impactResult.result?.fireball_radius_km ?? "N/A" }}</strong>
+          </h1>
         </div>
 
         <div class="info-row">
           <img src="@/assets/styles/icons/sound.png" class="icon" />
-          <h1 class="topic">Shock wave:</h1>
+          <h1 class="topic">
+            Shock wave:
+            <strong>{{ impactResult.result?.shock_wave_km ?? "N/A" }}</strong>
+          </h1>
         </div>
 
         <div class="info-row">
           <img src="@/assets/styles/icons/wind.png" class="icon" />
-          <h1 class="topic">Wind Speed:</h1>
+          <h1 class="topic">
+            Wind speed:
+            <strong>{{ impactResult.result?.wind_speed_kmh ?? "N/A" }}</strong>
+          </h1>
         </div>
-        
+
         <div class="info-row">
           <img src="@/assets/styles/icons/rock.png" class="icon" />
-          <h1 class="topic">Earthquake magnitude:</h1>
+          <h1 class="topic">
+            Earthquake magnitude:
+            <strong>{{ impactResult.result?.sismic_magnitude ?? "N/A" }}</strong>
+          </h1>
         </div>
-        
 
         <hr class="divider" />
         <h1 class="categories">How to deflect</h1>
+
+        <div style="padding: 12px;">
+          <p v-if="impactResult.result?.deflection_advice">
+            {{ impactResult.result.deflection_advice }}
+          </p>
+          <p v-else>
+            No deflection advice available for this simulation result.
+          </p>
+        </div>
       </div>
-        
-      
+
+      <div v-else style="padding: 20px">
+        No impact result found. Run the simulation from the Simulation page first.
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-// your script here
+import { ref, computed, onMounted } from "vue";
+import Collision from "@/components/Collision.vue";
+
+const impactResult = ref(null);
+const impactCoords = ref({ lat: null, lon: null });
+
+// Try to load saved simulation result from sessionStorage
+onMounted(() => {
+  try {
+    const raw = sessionStorage.getItem("lastImpact");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      impactResult.value = parsed;
+
+      if (parsed.coords && parsed.coords.lat != null && parsed.coords.lon != null) {
+        impactCoords.value = {
+          lat: Number(parsed.coords.lat),
+          lon: Number(parsed.coords.lon),
+        };
+      } else {
+        // Try to find coordinates inside the result object
+        const r = parsed.result ?? {};
+        const lat =
+          r.lat ??
+          r.latitude ??
+          r.location?.lat ??
+          r.impact?.lat ??
+          r.coords?.lat ??
+          parsed.payloadSent?.location?.lat ??
+          null;
+        const lon =
+          r.lon ??
+          r.longitude ??
+          r.location?.lon ??
+          r.impact?.lon ??
+          r.coords?.lon ??
+          parsed.payloadSent?.location?.lon ??
+          null;
+        if (lat != null && lon != null) {
+          impactCoords.value = { lat: Number(lat), lon: Number(lon) };
+        }
+      }
+    } else {
+      // Nothing in sessionStorage: nothing to show
+      impactResult.value = null;
+    }
+  } catch (e) {
+    console.error("Failed to read impact from sessionStorage", e);
+    impactResult.value = null;
+  }
+});
+
+const coordsAvailable = computed(() => {
+  return (
+    impactCoords.value &&
+    impactCoords.value.lat != null &&
+    impactCoords.value.lon != null
+  );
+});
 </script>
 
 <style scoped>
+/* your existing styles unchanged */
 @import url("https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single+Ink:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
 /* Root container fills viewport and is reference for absolutely positioned children */
 .organizer {
@@ -83,21 +218,7 @@
    overflow: hidden;
 }
 
-.asteroid {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 950px;
-  max-width: calc(100% - 420px);
-  height: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgb(4, 239, 239);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
+
 
 .info-card {
   position: absolute;
@@ -165,8 +286,6 @@
   background: #ccc;
   margin: 12px 0;
 }
-
-
 
 .start {
     text-decoration: none;
