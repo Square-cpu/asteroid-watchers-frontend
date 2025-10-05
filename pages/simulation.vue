@@ -214,7 +214,8 @@
                   ? Number(
                       selectedNeo?.orbital_data?.orbital_period ??
                         asteroidPayload?.orbital_data?.orbital_period
-                    ).toLocaleString(undefined, { maximumFractionDigits: 3 })
+                    ).toLocaleString(undefined, { maximumFractionDigits: 0 }) +
+                    " days"
                   : "N/A"
               }}
             </strong>
@@ -312,7 +313,9 @@
           </h1>
           <SelectImpactLocation @selected="onPlaceSelected" />
         </div>
+        <h1 class = "warning">The calculations made are quite accurate; pay attention while selecting a city so you can see the impacts based in the true location</h1>
       </div>
+      
 
       <div
         v-else-if="!loading && !error && neos.length === 0"
@@ -1004,6 +1007,13 @@ a {
 .start:hover {
   transform: scale(1.05);
 }
+.warning{
+  text-align: star;
+  font-size: 15px;
+  color: rgba(0, 0, 0, 0.548);
+  font-family: "Roboto", sans-serif;
+  font-weight: 900;
+}
 
 @media (max-width: 1200px) {
   .asteroid {
@@ -1038,5 +1048,6 @@ a {
     top: 0;
     margin: 0 auto;
   }
+  
 }
 </style>

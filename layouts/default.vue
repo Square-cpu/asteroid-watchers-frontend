@@ -4,7 +4,7 @@ const menuItems = [
   {
     items: [
       { label: "Home", icon: "fi fi-rr-home", route: "/" },
-      { label: "About", icon: "fi fi-rr-info", route: "/about" },
+      { label: "Help", icon: "fi fi-rr-info", route: "/help" },
     ],
   },
   {
