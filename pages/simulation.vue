@@ -16,7 +16,14 @@
             <div style="font-size: 12px; color: #666">Date</div>
 
             <!-- date picker: user may pick a day, but min/max restrict to today -->
-            <div style="font-weight: 700; display:flex; align-items:center; gap:8px;">
+            <div
+              style="
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              "
+            >
               <input
                 type="date"
                 v-model="params.start_date"
@@ -43,7 +50,6 @@
           </select>
         </div>
       </div>
-      
 
       <h2 class="name">
         <template v-if="loading">Loading...</template>
@@ -52,9 +58,7 @@
         <template v-else>Nenhum asteroide encontrado</template>
       </h2>
 
-
       <hr class="divider" />
-
 
       <h1 class="categories">Physical properties</h1>
       <div class="info" v-if="!loading && !error && selectedNeo">
@@ -114,12 +118,11 @@
         <hr class="divider" />
 
         <h1 class="categories">Orbit information</h1>
-        
+
         <div class="info-row">
           <img src="@/assets/styles/icons/angle.svg" class="icon" />
           <h1 class="topic">
-            Orbit Angle: <strong>{{ orbitInclination }}</strong
-            >
+            Orbit Angle: <strong>{{ orbitInclination }}</strong>
           </h1>
         </div>
 
@@ -133,8 +136,6 @@
           </h1>
         </div>
 
-
-
         <div class="info-row">
           <img src="@/assets/styles/icons/axis-minor.png" class="icon" />
           <h1 class="topic">
@@ -144,9 +145,6 @@
             }}</strong>
           </h1>
         </div>
-
-
-
 
         <div class="info-row">
           <img src="@/assets/styles/icons/period.png" class="icon" />
@@ -158,8 +156,7 @@
           </h1>
         </div>
 
-
-                <div class="info-row">
+        <div class="info-row">
           <img src="@/assets/styles/icons/circle.png" class="icon" />
           <h1 class="topic">
             Eccentricity:
@@ -168,8 +165,6 @@
             }}</strong>
           </h1>
         </div>
-
-
 
         <div class="info-row">
           <img src="@/assets/styles/icons/angle.svg" class="icon" />
@@ -181,7 +176,6 @@
           </h1>
         </div>
 
-
         <div class="info-row">
           <img src="@/assets/styles/icons/a-e.png" class="icon" />
           <h1 class="topic">
@@ -191,7 +185,6 @@
             }}</strong>
           </h1>
         </div>
-
 
         <div class="info-row">
           <img src="@/assets/styles/icons/a-e.png" class="icon" />
@@ -203,11 +196,10 @@
           </h1>
         </div>
 
-
         <div class="info-row">
           <img src="@/assets/styles/icons/speed.png" class="icon" />
           <h1 class="topic">
-          Total Energy:
+            Total Energy:
             <strong>{{
               selectedNeo.is_potentially_hazardous_asteroid ? "Yes" : "No"
             }}</strong>
@@ -215,15 +207,14 @@
         </div>
         <hr class="divider" />
 
-
-
-
-<h1 class="categories">Simulation</h1>
-
+        <h1 class="categories">Simulation</h1>
 
         <div class="info-row">
           <img src="@/assets/styles/icons/place.svg" class="icon" />
-          <h1 class="topic">Target Country: <strong>N/A</strong></h1>
+          <h1 class="topic">
+            Target Place: <strong>{{ formatedLocation }}</strong>
+          </h1>
+          <SelectImpactLocation @selected="onPlaceSelected" />
         </div>
       </div>
 
@@ -234,9 +225,9 @@
         No near-earth objects found in the requested date range.
       </div>
 
-      <NuxtLink to="/personalize">
-        <button class="start">Start Simulation</button>
-      </NuxtLink>
+      <!-- <NuxtLink to="/personalize"> -->
+      <button class="start" @click="startSimulation">Start Simulation</button>
+      <!-- </NuxtLink> -->
     </div>
   </div>
 </template>
@@ -244,6 +235,71 @@
 <script setup>
 import { ref, computed, onMounted, watch, reactive } from "vue";
 import Asteroid from "@/components/Asteroid.vue";
+import SelectImpactLocation from "@/components/SelectImpactLocation.vue";
+import * as turf from "@turf/turf";
+
+const impactLocation = ref(null); // will hold { lat, lon, radius_km? }
+
+// handler for the emitted event
+function onPlaceSelected(coords) {
+  // coords is { lat, lon } from the modal
+  // store and optionally set a default radius (you can allow user to change radius elsewhere)
+  impactLocation.value = {
+    lat: coords.lat,
+    lon: coords.lon,
+    radius_km: 5, // choose default or expose UI to change
+  };
+}
+
+const formatedLocation = computed(() => {
+  if (!impactLocation.value) return null;
+  return `${impactLocation.value.lat}, ${impactLocation.value.lon}`;
+});
+
+async function startSimulation() {
+  if (!asteroidPayload.value) {
+    alert("No asteroid selected");
+    return;
+  }
+  if (!impactLocation.value) {
+    alert(
+      'No impact location selected. Click "Select Impact Location" to choose one.'
+    );
+    return;
+  }
+
+  const payload = {
+    asteroid: asteroidPayload.value, // full asteroid info already on page
+    location: impactLocation.value, // { lat, lon, radius_km }
+  };
+
+  try {
+    loading.value = true;
+    const resp = await fetch(`${BACKEND_BASE}/asteroid/simulate-impact`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      const errMsg = await resp.text().catch(() => resp.statusText);
+      throw new Error(errMsg || `HTTP ${resp.status}`);
+    }
+    const json = await resp.json();
+    // handle results: show a modal, save into reactive state, etc.
+    console.log("simulation result", json);
+    // example: show place & kills to the user
+    alert(
+      `Place: ${json.place || "—"}\nPopulation: ${
+        json.population
+      }\nEstimated deaths: ${json.estimated_kills}`
+    );
+  } catch (err) {
+    console.error(err);
+    alert("Simulation failed: " + (err.message || err));
+  } finally {
+    loading.value = false;
+  }
+}
 
 /**
  * Frontend call to NASA NEO Feed API and parsing logic.
@@ -254,6 +310,7 @@ import Asteroid from "@/components/Asteroid.vue";
 // Backend endpoint (same-origin). If your backend is on a different origin,
 // change this to the full URL, e.g. "https://api.example.com/asteroid/feed"
 const BACKEND_FEED = "http://localhost:5000/asteroid/feed";
+const BACKEND_BASE = BACKEND_FEED.replace(/\/asteroid\/feed\/?$/, ""); // -> "http://localhost:5000"
 
 // helper: return local yyyy-mm-dd (user's local timezone)
 function getLocalISODate() {
@@ -588,7 +645,7 @@ onMounted(() => {
 .organizer {
   margin: 0;
   padding: 0;
-   overflow: hidden;
+  overflow: hidden;
 }
 
 .asteroid {
@@ -623,18 +680,16 @@ onMounted(() => {
   margin: 0;
   border-left: 2px solid #ccc;
 
-
   overflow-y: auto;
   overflow-x: hidden; /* evita barra lateral horizontal */
 }
 
-.categories{
-    text-align: center;
+.categories {
+  text-align: center;
   font-size: 25px;
   color: black;
   font-family: "Roboto", sans-serif;
   font-weight: 900;
-
 }
 
 .info-card .name {
