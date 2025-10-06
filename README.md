@@ -1,75 +1,122 @@
-# Nuxt Minimal Starter
+# Asteroid Watchers
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+## What it does / Overview
 
-## Setup
+**Asteroid Watchers** is an educational web-based simulation platform that models near-Earth asteroid impacts and delivers comprehensive analysis of potentially hazardous objects. It integrates real NASA data, physics-based calculations, interactive 3D explorations, and an impact simulation engine for teaching and research support.
 
-Make sure to install dependencies:
+---
 
-```bash
-# npm
-npm install
+## How it works
 
-# pnpm
-pnpm install
+### Data Collection & Processing
 
-# yarn
-yarn install
+* Fetches real-time near-Earth object data from NASA’s `NEO Web Service API`.
+* Backend processing computes additional physical properties such as:
 
-# bun
-bun install
-```
+  * Mass estimation
+  * Orbital energy
+  * Impact velocities
+    using gravitational physics calculations and standard astronomical constants.
 
-## Development Server
+### Interactive 3D Visualization
 
-Start the development server on `http://localhost:3000`:
+* 3D preview system with rotation and zoom to inspect asteroid shapes and characteristics visually.
 
-```bash
-# npm
-npm run dev
+### Impact Simulation Engine
 
-# pnpm
-pnpm dev
+Users can run physics-based impact simulations by:
 
-# yarn
-yarn dev
+1. Selecting specific dates to view available near-Earth objects.
+2. Choosing an asteroid from a list (with approach distances).
+3. Placing impact coordinates on an interactive map.
+4. Running simulations that compute:
 
-# bun
-bun run dev
-```
+   * Crater size
+   * Casualty estimates
+   * Seismic effects
+   * Fireball radius
+   * Shock wave impacts
 
-## Production
+### Customization Tools
 
-Build the application for production:
+* Creator module to design custom asteroids (size, speed, composition) for "what-if" experiments.
 
-```bash
-# npm
-npm run build
+---
 
-# pnpm
-pnpm build
+## Benefits and Intended Impact
 
-# yarn
-yarn build
+### Educational Value
 
-# bun
-bun run build
-```
+* Transforms complex astronomy and physics into interactive learning experiences for students and educators.
 
-Locally preview production build:
+### Public Awareness
 
-```bash
-# npm
-npm run preview
+* Visualizes potentially hazardous asteroids to increase public understanding of planetary defense and monitoring programs.
 
-# pnpm
-pnpm preview
+### Scientific Literacy
 
-# yarn
-yarn preview
+* Bridges raw NASA data and public comprehension of orbital mechanics, impact physics, and risk assessment.
 
-# bun
-bun run preview
-```
+### Research Support
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+* Helps researchers and educators demonstrate impact scenarios and test theoretical deflection strategies via an integrated recommendation system.
+
+---
+
+## Tools, Technologies, and Development Stack
+
+### Programming Languages
+
+* Python (backend data processing & API integration)
+* JavaScript (frontend interactivity)
+* HTML / CSS (UI)
+
+### APIs and Data Sources
+
+* NASA `NEO Web Service API` for asteroid data
+* Astronomical constants for gravitational/physics calculations
+
+### Libraries and Frameworks
+
+* Python: `requests`, `json`, `math` (and other numeric utilities as needed)
+* Frontend: modern web tech for 3D rendering and mapping (WebGL / Three.js, mapping libraries, etc.)
+
+### Deployment Platform
+
+* Vercel for hosting and deployment
+* Railway for backend deployment
+
+### Physics Engine
+
+Custom simulation combining:
+
+* Gravitational constant calculations
+* Orbital mechanics formulas
+* Energy & momentum conservation principles
+* Seismic impact modeling
+
+---
+
+## Creative & Innovative Aspects
+
+* **Real-Time Data Integration:** Live NASA data rather than static examples.
+* **Multi-Layered Simulation:** Unified modeling of orbital mechanics, atmospheric physics, and impact geology.
+* **Deflection Strategy Integration:** Algorithmic recommendations for planetary defense actions.
+* **User-Centric Design:** Guided, step-by-step interface that balances accessibility with scientific accuracy.
+* **Customization Capabilities:** Creator module for hypothetical scenarios and exploratory learning.
+
+---
+
+## Team Considerations & Factors
+
+* **Scientific Accuracy vs. Accessibility:** Simplified but educational physics models to balance precision and performance.
+* **Data Reliability:** Estimation algorithms to handle incomplete or missing NASA data while keeping simulations functional.
+* **Educational Framework:** UI includes contextual help, unit clarifications, and guided steps to support pedagogy.
+* **Performance Optimization:** Caching and efficient processing to respect API rate limits and ensure responsiveness.
+* **Risk Communication:** Ethical presentation of results with clear disclaimers that simulations are educational models, not predictive tools.
+
+---
+
+## Conclusion
+
+Asteroid Watchers is a comprehensive educational platform that combines real astronomical data with interactive, physics-based simulation tools to improve public understanding, support research demonstrations, and provide hands-on learning about planetary defense and impact physics.
