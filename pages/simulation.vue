@@ -348,7 +348,7 @@ import * as turf from "@turf/turf";
 const router = useRouter(); // <-- added
 
 // --- basic config (unchanged) ---
-const BACKEND_FEED = "http://localhost:5000/asteroid/feed";
+const BACKEND_FEED = "http://asteroid-watchers-backend.up.railway.app/asteroid/feed";
 const BACKEND_BASE = BACKEND_FEED.replace(/\/asteroid\/feed\/?$/, "");
 
 // helper: return local yyyy-mm-dd
