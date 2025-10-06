@@ -25,9 +25,8 @@ let origPositions;
 let noise3D;
 let rafId;
 let craters = [];
-let ro; // ResizeObserver
+let ro;
 
-// --- Helpers ---
 function updateNoiseWithSeed(seed) {
   const prng = alea(String(seed));
   noise3D = createNoise3D(prng);
@@ -82,7 +81,6 @@ function applyDeformation(geometry, origPositions, params) {
   geometry.attributes.position.needsUpdate = true;
 }
 
-// small debounce helper
 function debounce(fn, wait = 50) {
   let t = null;
   return (...args) => {
@@ -98,26 +96,22 @@ function setRendererSizeToContainer() {
   const width = Math.max(1, Math.floor(rect.width));
   const height = Math.max(1, Math.floor(rect.height));
 
-  // respect device pixel ratio but clamp for perf
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   renderer.setPixelRatio(dpr);
 
-  // updates the canvas style.width/height
   renderer.setSize(width, height, true);
 
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
 }
 
-// --- Lifecycle ---
 onMounted(() => {
   if (!canvasContainer.value) return;
 
-  // Scene + camera + renderer
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0b0b0b);
 
-  camera = new THREE.PerspectiveCamera(64, 1, 0.01, 100); // aspect will be set below
+  camera = new THREE.PerspectiveCamera(64, 1, 0.01, 100);
   camera.position.set(0, 0, 3.5);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -223,27 +217,18 @@ onMounted(() => {
     renderer.render(scene, camera);
   }
 
-  // debounced wrapper to reduce churn during transitions
   const debouncedResize = debounce(() => setRendererSizeToContainer(), 40);
 
-  // ResizeObserver watching the canvas container, the layout grid AND the sidebar
   ro = new ResizeObserver(debouncedResize);
 
-  // always observe the canvas container (main trigger)
   ro.observe(canvasContainer.value);
 
-  // observe the top-level layout grid if present (helps for grid-template changes)
   const layoutGrid = document.querySelector(".layout-grid");
   if (layoutGrid) ro.observe(layoutGrid);
 
-  // also observe the sidebar element itself — many layouts animate the sidebar width,
-  // and observing the sidebar ensures we catch the "open" case when the layout-grid RO
-  // might not fire.
   const sidebarEl = document.querySelector(".sidebar");
   if (sidebarEl) ro.observe(sidebarEl);
 
-  // Some CSS transitions can finish without emitting intermediate RO events depending
-  // on how the browser batches layout. Add a transitionend fallback on layoutGrid/sidebar.
   const onTransitionEnd = (ev) => {
     if (!ev || !ev.propertyName) {
       debouncedResize();
@@ -254,22 +239,18 @@ onMounted(() => {
       ev.propertyName.includes("width") ||
       ev.propertyName.includes("transform")
     ) {
-      // give browser one tick to settle final layout
       setTimeout(setRendererSizeToContainer, 0);
     }
   };
   if (layoutGrid) layoutGrid.addEventListener("transitionend", onTransitionEnd);
   if (sidebarEl) sidebarEl.addEventListener("transitionend", onTransitionEnd);
 
-  // store the handler refs for cleanup later
   canvasContainer.value.__three_onTransitionEnd = onTransitionEnd;
   canvasContainer.value.__three_observedEls = { layoutGrid, sidebarEl };
 
-  // set initial size then start animation
   setRendererSizeToContainer();
   animate();
 
-  // fallback window resize to keep things safe
   window.addEventListener("resize", setRendererSizeToContainer);
 });
 
@@ -298,7 +279,6 @@ onBeforeUnmount(() => {
 
   window.removeEventListener("resize", setRendererSizeToContainer);
 
-  // disconnect and remove listeners
   if (ro) {
     ro.disconnect();
     ro = null;
@@ -316,25 +296,19 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* The page content container will size the canvas; don't use 100vw here. */
 .personalize-root {
   width: 100%;
   height: 100%;
   position: relative;
 }
 
-/* Canvas should fill the available content area inside the layout column */
 .canvas-fill {
   width: 100%;
-  /* Use viewport height so the scene always fits vertically.
-     If your layout includes headers or other chrome, adjust this accordingly,
-     for example: height: calc(100vh - var(--header-height));
-  */
+
   height: calc(100vh - 40px);
   position: relative;
 }
 
-/* GUI sits fixed so it's not clipped by the column; keeps same look/position */
 .ui-root {
   position: fixed;
   right: 10px;
@@ -342,7 +316,6 @@ onBeforeUnmount(() => {
   z-index: 10;
 }
 
-/* small utility for buttons (copied) */
 button {
   border-radius: 8px;
   border: 1px solid transparent;

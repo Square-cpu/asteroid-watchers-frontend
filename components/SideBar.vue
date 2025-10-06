@@ -1,42 +1,26 @@
 <template>
-  <!-- The main container for the sidebar. The 'collapsed' class is dynamically applied. -->
+  
   <aside :class="['sidebar', { collapsed }]">
-    <!-- Brand/Logo Section: Uses a named slot for maximum flexibility. -->
-    <div v-if="user" class="sidebar-header">
-      <!-- <slot name="brand">
-      
-        <img
-          src="https://placehold.co/150x40/635BFF/FFFFFF?text=Logo&font=inter"
-          alt="Logo"
-          class="brand-logo"
-        />
-      </slot> -->
 
-      <img :src="user.image" alt="User profile picture" />
-
-      <span v-if="!collapsed">{{ user.fullname }}</span>
-    </div>
-
-    <!-- Scrollable Menu Navigation -->
     <nav class="menu">
-      <!-- Loop through each section of menu items -->
+   
       <div
         v-for="(section, sectionIndex) in menuItems"
         :key="`section-${sectionIndex}`"
         class="menu-section"
       >
-        <!-- Display the section title if it exists -->
+
         <h3 v-if="section.title && !collapsed" class="section-title">
           {{ section.title }}
         </h3>
 
-        <!-- Loop through each item within the section -->
+
         <div
           v-for="(item, itemIndex) in section.items"
           :key="`item-${itemIndex}`"
           class="menu-item-wrapper"
         >
-          <!-- Render a clickable menu item (parent for a submenu) -->
+
           <div
             v-if="item.children"
             class="item-content"
@@ -52,7 +36,7 @@
             />
           </div>
 
-          <!-- Render a direct link (NuxtLink) -->
+
           <NuxtLink
             v-else
             :to="item.route || '/'"
@@ -63,7 +47,7 @@
             <span v-if="!collapsed" class="label">{{ item.label }}</span>
           </NuxtLink>
 
-          <!-- Render the submenu if the item has children and is open -->
+
           <div v-if="item.children && item.open && !collapsed" class="submenu">
             <NuxtLink
               v-for="(child, childIndex) in item.children"
@@ -81,15 +65,6 @@
     </nav>
 
     <Footer v-show="!collapsed" />
-
-    <!-- Collapse Handle -->
-    <!-- <div class="collapse-handle" @click="toggleCollapse">
-      <i
-        :class="
-          collapsed ? 'fi fi-rr-angle-small-right' : 'fi fi-rr-angle-small-left'
-        "
-      />
-    </div> -->
   </aside>
 </template>
 
@@ -99,7 +74,6 @@ import { useRoute } from "vue-router";
 const { data: session } = useAuth();
 const user = computed(() => session.value);
 
-// --- TYPE DEFINITIONS for props ---
 interface MenuItem {
   label: string;
   icon?: string;
@@ -113,26 +87,17 @@ interface MenuSection {
   items: MenuItem[];
 }
 
-// --- PROPS ---
-// The component accepts an array of sections and items to display.
 const props = defineProps<{
   menuItems: MenuSection[];
 }>();
 
-// --- STATE ---
-// Reactive state for the sidebar's collapsed status.
 const collapsed = ref(false);
 
-// Access the current route to determine active links.
 const route = useRoute();
 
-// --- METHODS ---
-/**
- * Toggles the sidebar's collapsed state.
- */
 const toggleCollapse = () => {
   collapsed.value = !collapsed.value;
-  // When collapsing, close all submenus.
+
   if (collapsed.value) {
     props.menuItems.forEach((section) => {
       section.items.forEach((item) => {
@@ -149,11 +114,10 @@ const toggleCollapse = () => {
  * @param {MenuItem} clickedItem - The parent menu item that was clicked.
  */
 const toggleSubmenu = (clickedItem: MenuItem) => {
-  if (collapsed.value) return; // Don't open submenus when collapsed
+  if (collapsed.value) return; 
 
   const wasOpen = clickedItem.open;
 
-  // Close all other submenus for an accordion effect.
   props.menuItems.forEach((section) => {
     section.items.forEach((item) => {
       if (item.children) {
@@ -162,7 +126,6 @@ const toggleSubmenu = (clickedItem: MenuItem) => {
     });
   });
 
-  // Open the clicked submenu if it was previously closed.
   if (!wasOpen) {
     clickedItem.open = true;
   }
@@ -180,15 +143,14 @@ const isParentActive = (parentItem: MenuItem): boolean => {
   );
 };
 
-// --- WATCHERS ---
-// When the route changes, automatically open the relevant submenu.
+
 watch(
   () => route.path,
   (newPath) => {
     props.menuItems.forEach((section) => {
       section.items.forEach((item) => {
         if (item.children) {
-          // Check if any child's route matches the new path
+
           const isChildActive = item.children.some(
             (child) => child.route && newPath.startsWith(child.route)
           );
@@ -197,7 +159,7 @@ watch(
       });
     });
   },
-  { immediate: true } // Run this check immediately on component load
+  { immediate: true } 
 );
 </script>
 
@@ -214,8 +176,6 @@ watch(
   border-right: 1px solid #e6ebf1;
   z-index: 1;
 }
-
-
 
 .sidebar-header {
   height: 56px;
@@ -337,9 +297,6 @@ watch(
 .submenu-item.active .label {
   color: #000000;
 }
-
-
-
 
 @import url("https://cdn-uicons.flaticon.com/2.4.2/uicons-regular-rounded/css/uicons-regular-rounded.css");
 </style>

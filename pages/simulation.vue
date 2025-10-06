@@ -1,14 +1,13 @@
 <template>
   <div class="organizer">
     <div class="asteroid">
-      <!-- pass the mapped payload to the Asteroid component -->
       <Asteroid v-if="asteroidPayload" :asteroidData="asteroidPayload" />
     </div>
 
-
-
     <div class="info-card">
-      <h1 class = "warning">Don't know how to use the simulator? Go to the help menu :)</h1>
+      <h1 class="warning">
+        Don't know how to use the simulator? Go to the help menu :)
+      </h1>
       <div
         class="info-row"
         style="justify-content: space-between; align-items: center"
@@ -316,9 +315,11 @@
           </h1>
           <SelectImpactLocation @selected="onPlaceSelected" />
         </div>
-        <h1 class = "warning">The calculations made are quite accurate; pay attention while selecting a city so you can see the impacts based in the true location</h1>
+        <h1 class="warning">
+          The calculations made are quite accurate; pay attention while
+          selecting a city so you can see the impacts based in the true location
+        </h1>
       </div>
-      
 
       <div
         v-else-if="!loading && !error && neos.length === 0"
@@ -327,31 +328,26 @@
         No near-earth objects found in the requested date range.
       </div>
 
-      <!-- <NuxtLink to="/personalize"> -->
       <div v-if="!loading">
         <button class="start" @click="startSimulation">Start Simulation</button>
-      </div>      
-      <!-- </NuxtLink> -->
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch, reactive } from "vue";
-import { useRouter } from "vue-router"; // <-- added
+import { useRouter } from "vue-router";
 import Asteroid from "@/components/Asteroid.vue";
 import SelectImpactLocation from "@/components/SelectImpactLocation.vue";
 import * as turf from "@turf/turf";
 
-// ... rest of file unchanged above ...
+const router = useRouter();
 
-const router = useRouter(); // <-- added
-
-// --- basic config (unchanged) ---
-const BACKEND_FEED = "https://asteroid-watchers-backend.up.railway.app/asteroid/feed";
+const BACKEND_FEED =
+  "https://asteroid-watchers-backend.up.railway.app/asteroid/feed";
 const BACKEND_BASE = BACKEND_FEED.replace(/\/asteroid\/feed\/?$/, "");
 
-// helper: return local yyyy-mm-dd
 function getLocalISODate() {
   const now = new Date();
   const tzOffsetMs = now.getTimezoneOffset() * 60000;
@@ -360,7 +356,6 @@ function getLocalISODate() {
 }
 const today = getLocalISODate();
 
-// --- reactive state ---
 const params = reactive({
   start_date: today,
   end_date: today,
@@ -369,15 +364,11 @@ const params = reactive({
 const loading = ref(true);
 const error = ref(null);
 
-// `neos` now holds lightweight entries from backend feed:
-// { id, name, distance_km (Number), details: { ... } (when fetched) }
 const neos = ref([]);
 const selectedIndex = ref(0);
 
-// local cache for fetched details by id (avoid refetching)
-const detailsCache = reactive({}); // keys: asteroidId -> details object returned by backend
+const detailsCache = reactive({});
 
-// --- format helpers (unchanged) ---
 function formatMeters(n) {
   if (n == null) return "N/A";
   return `${Number(n).toLocaleString(undefined, {
@@ -893,9 +884,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* (your original CSS unchanged — kept here to keep the file self-contained) */
 @import url("https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single+Ink:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
-/* Root container fills viewport and is reference for absolutely positioned children */
+
 .organizer {
   margin: 0;
   padding: 0;
@@ -923,19 +913,18 @@ onMounted(() => {
   right: 0;
   width: 350px;
   max-width: 38%;
-  height: 100vh; /* ocupa toda a altura da janela */
+  height: 100vh;
   padding: 20px;
   box-sizing: border-box;
   background-color: azure;
 
-  /* estilos visuais */
   border-radius: 0;
   box-shadow: none;
   margin: 0;
   border-left: 2px solid #ccc;
 
   overflow-y: auto;
-  overflow-x: hidden; /* evita barra lateral horizontal */
+  overflow-x: hidden;
 }
 
 .categories {
@@ -1012,7 +1001,7 @@ a {
 .start:hover {
   transform: scale(1.05);
 }
-.warning{
+.warning {
   text-align: star;
   font-size: 15px;
   color: rgba(0, 0, 0, 0.548);
@@ -1053,6 +1042,5 @@ a {
     top: 0;
     margin: 0 auto;
   }
-  
 }
 </style>

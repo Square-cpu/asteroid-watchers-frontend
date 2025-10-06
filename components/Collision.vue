@@ -37,7 +37,6 @@ function loadTextureAsync(url) {
   });
 }
 
-// ---- same helper functions as before ----
 function createAsteroidMesh() {
   const geom = mergeVertices(new THREE.IcosahedronGeometry(0.3, 4));
   const posAttr = geom.attributes.position;
@@ -121,7 +120,6 @@ function launchAsteroid(lat, lon) {
     .subVectors(impactPoint, asteroid.position)
     .normalize();
 
-  // speed: try to use impactInfo if it provides entry speed (km/s) -> convert to a scalar for visual speed
   let speedScalar = 0.05;
   try {
     const v_km_s =
@@ -244,8 +242,6 @@ onMounted(() => {
         .normalize()
         .multiplyScalar(2.01);
 
-      // async/await inside animation loop is ok — it won't block render because
-      // load returns quickly if cached; otherwise marker appears when ready.
       loadTextureAsync(crater_texture)
         .then((texture) => {
           const markerRadius = 0.25;
